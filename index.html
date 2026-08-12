@@ -404,7 +404,7 @@
     function dismissWarning() {
       document.getElementById('warning-overlay').style.display = 'none';
       document.getElementById('stage').classList.remove('blurred');
-      setDollImage('doll_far.png');
+      setDollImage('doll_far.jpg');
       currentStep = 1;
       setSubtitle("привет. Ты вновь пришел со мной поиграть? Я так рада тебя видеть.");
     }
@@ -484,7 +484,7 @@
           setDollImage('doll_knife.png');
           setSubtitle("Я очень не люблю любопытных людишек, тебе не должно быть интересно...", () => {
             setTimeout(() => {
-              setDollImage('doll_far.png');
+              setDollImage('doll_far.jpg');
               askQuestion3();
             }, 2500);
           });
@@ -514,7 +514,7 @@
 
     function askQuestion3() {
       currentStep = 3;
-      setDollImage('doll_far.png');
+      setDollImage('doll_far.jpg');
       setSubtitle("Скажи мне честно... Тебе ведь хоть немного страшно? Или твое сердце стучит так громко просто от чая с сахаром?", () => {
         showOptions([
           { text: "Нисколько. Смешно бояться куклы на экране.", correct: false },
