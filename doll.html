@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doll Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: #050505;
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* ФОН И РАМКА ОШИБОК */
+    #red-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255, 0, 0, 0);
+      pointer-events: none;
+      transition: background 0.5s ease;
+      z-index: 5;
+    }
+
+    #crack-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      display: none;
+      z-index: 200;
+      background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 80%),
+                  repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 10px);
+    }
+
+    /* ЖИЗНИ (СЕРДЕЧКИ) */
+    #hearts-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .heart {
+      width: 28px;
+      height: 28px;
+      background-color: #ff2244;
+      clip-path: polygon(50% 15%, 80% 0%, 100% 20%, 100% 50%, 50% 95%, 0% 50%, 0% 20%, 20% 0%);
+      box-shadow: 0 0 10px #ff0033;
+      transition: all 0.3s ease;
+    }
+
+    .heart.lost {
+      background-color: #333;
+      box-shadow: none;
+      transform: scale(0.8);
+    }
+
+    /* ОВЕРЛЕЙ ПРЕДУПРЕЖДЕНИЯ */
+    #warning-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 150;
+      cursor: pointer;
+    }
+
+    #warning-text {
+      font-size: 2.2rem;
+      color: #ffffff;
+      font-weight: bold;
+      text-shadow: 0 0 10px #ffffff, 0 0 20px #ff0000;
+      text-align: center;
+    }
+
+    /* СЦЕНА С КУКЛОЙ */
+    #stage {
+      width: 100%;
+      max-width: 800px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 40px 20px;
+      position: relative;
+      z-index: 10;
+      transition: filter 0.5s ease;
+    }
+
+    .blurred {
+      filter: blur(6px);
+    }
+
+    .shatter {
+      animation: fallDown 0.8s forwards ease-in;
+    }
+
+    @keyframes fallDown {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(15deg); opacity: 0; }
+    }
+
+    /* ПИКСЕЛЬНАЯ КУКЛА (SVG) */
+    #doll-wrapper {
+      width: 220px;
+      height: 260px;
+      margin-top: 40px;
+      transition: transform 1s ease;
+      position: relative;
+    }
+
+    .doll-svg {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    /* ПОЗИЦИИ КУКЛЫ */
+    .doll-back { transform: scale(1.4); }
+    .doll-far { transform: scale(0.9); }
+    .doll-close { transform: scale(1.3) translateY(30px); }
+
+    /* ДИАЛОГОВЫЙ БЛОК */
+    #dialogue-container {
+      width: 100%;
+      background: rgba(10, 10, 10, 0.9);
+      border: 2px solid #333;
+      padding: 20px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 0 20px rgba(0,0,0,0.9);
+    }
+
+    #speaker-name {
+      color: #ff4466;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      display: none;
+    }
+
+    #subtitle {
+      color: #00ff66;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    /* ВАРИАНТЫ ОТВЕТОВ */
+    #options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-btn {
+      background: #151515;
+      color: #ddd;
+      border: 1px solid #444;
+      padding: 12px 15px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover {
+      background: #252525;
+      color: #fff;
+      border-color: #777;
+    }
+
+    /* ВВОД ИМЕНИ */
+    #name-input-container {
+      display: none;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    #name-input {
+      flex: 1;
+      background: #000;
+      border: 1px solid #555;
+      color: #fff;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    #submit-name-btn {
+      background: #333;
+      color: #fff;
+      border: 1px solid #666;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    #submit-name-btn:hover { background: #555; }
+  </style>
+</head>
+<body>
+
+  <div id="red-overlay"></div>
+  <div id="crack-overlay"></div>
+
+  <!-- Сердечки -->
+  <div id="hearts-container">
+    <div class="heart" id="h1"></div>
+    <div class="heart" id="h2"></div>
+    <div class="heart" id="h3"></div>
+  </div>
+
+  <!-- Важное предупреждение поверх -->
+  <div id="warning-overlay" onclick="dismissWarning()">
+    <div id="warning-text">(НЕ РАССТРОЙ КУКОЛКУ)</div>
+  </div>
+
+  <!-- Игровая сцена -->
+  <div id="stage" class="blurred">
+    
+    <!-- Кукла SVG -->
+    <div id="doll-wrapper" class="doll-back">
+      <svg class="doll-svg" viewBox="0 0 32 32">
+        <!-- Тело и Платье -->
+        <path d="M10,18 L22,18 L25,30 L7,30 Z" fill="#2a2030"/>
+        <!-- Голова -->
+        <rect x="10" y="6" width="12" height="12" fill="#d0c0b0"/>
+        <!-- Волосы (Спиной) -->
+        <g id="hair-back">
+          <rect x="8" y="4" width="16" height="16" fill="#111"/>
+        </g>
+        <!-- Лицо (Лицом к нам, скрыто изначально) -->
+        <g id="face-front" style="display: none;">
+          <rect x="8" y="4" width="16" height="6" fill="#111"/> <!-- Чёлка -->
+          <rect x="12" y="11" width="2" height="3" fill="#111"/> <!-- Левый глаз -->
+          <rect x="18" y="11" width="2" height="3" fill="#111"/> <!-- Правый глаз -->
+          <!-- Рот обычный -->
+          <rect id="mouth-normal" x="14" y="15" width="4" height="1" fill="#880000"/>
+          <!-- Рот улыбка -->
+          <path id="mouth-smile" d="M13,15 L14,16 L18,16 L19,15" stroke="#ff0044" stroke-width="1" fill="none" style="display: none;"/>
+        </g>
+        <!-- Руки -->
+        <rect x="7" y="18" width="3" height="8" fill="#d0c0b0"/>
+        <rect x="22" y="18" width="3" height="8" fill="#d0c0b0"/>
+      </svg>
+    </div>
+
+    <!-- Диалоговое окно -->
+    <div id="dialogue-container" onclick="handleStageClick()">
+      <div>
+        <div id="speaker-name">КУКЛА</div>
+        <div id="subtitle">привет. Ты вновь пришел со мной поиграть? Я так рада тебя видеть.</div>
+      </div>
+
+      <div id="options-container" onclick="event.stopPropagation()"></div>
+
+      <div id="name-input-container" onclick="event.stopPropagation()">
+        <input type="text" id="name-input" placeholder="Введите имя..." maxlength="20" />
+        <button id="submit-name-btn" onclick="submitName()">ПОДТВЕРДИТЬ</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // База женских имён для проверки
+    const VALID_FEMALE_NAMES = [
+      "анна", "аня", "алиса", "алина", "анастасия", "настя", "арина", "александра", "саша",
+      "вероника", "виктория", "вика", "валерия", "варя", "варвара", "дарья", "даша", "диана",
+      "ева", "елена", "лена", "екатерина", "катя", "елизавета", "лиза", "евгения", "женя",
+      "злата", "ирина", "ира", "полина", "поля", "мария", "маша", "марина", "милана", "мирослава",
+      "надежда", "надя", "наталья", "наташа", "ольга", "оля", "софия", "софья", "соня",
+      "светлана", "света", "татьяна", "таня", "ульяна", "юлия", "юля", "яночка", "яна",
+      "лилия", "роза", "белла", "эмма", "оливия", "шарлотта", "клара", "элеонора", "мэри", "алиса"
+    ];
+
+    let health = 3;
+    let currentStep = 0;
+    let assignedName = "";
+
+    // Звуковой синтезатор (без сторонних файлов)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'bad') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      } else if (type === 'good') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } else if (type === 'scary') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.6);
+      }
+    }
+
+    // Закрытие первого оверлея
+    function dismissWarning() {
+      document.getElementById('warning-overlay').style.display = 'none';
+      document.getElementById('stage').classList.remove('blurred');
+      
+      // Поворот куклы
+      document.getElementById('hair-back').style.display = 'none';
+      document.getElementById('face-front').style.display = 'block';
+      
+      const wrapper = document.getElementById('doll-wrapper');
+      wrapper.classList.remove('doll-back');
+      wrapper.classList.add('doll-far');
+
+      // Начало первого вопроса
+      currentStep = 1;
+      setSubtitle("Мастер долго вытачивал мое лицо, но забыл подарить мне настоящее имя. Он просто оставил меня здесь. Как ты думаешь, почему он бросил меня одну в этой темноте?");
+    }
+
+    function handleStageClick() {
+      if (currentStep === 1) {
+        showOptions([
+          { text: "Наверное он променял тебя?", correct: false },
+          { text: "Он просто испугался, потому что ты получилась слишком идеальной и живой для этого мира", correct: true }
+        ]);
+      }
+    }
+
+    function setSubtitle(text) {
+      document.getElementById('subtitle').innerText = text;
+    }
+
+    function clearOptions() {
+      document.getElementById('options-container').innerHTML = '';
+    }
+
+    function showOptions(options) {
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt.text;
+        btn.onclick = () => handleChoice(opt);
+        container.appendChild(btn);
+      });
+    }
+
+    function punish() {
+      health--;
+      playSound('bad');
+      
+      // Обновление сердечек
+      if (health === 2) document.getElementById('h3').classList.add('lost');
+      else if (health === 1) document.getElementById('h2').classList.add('lost');
+      else if (health <= 0) document.getElementById('h1').classList.add('lost');
+
+      // Покраснение экрана
+      const overlay = document.getElementById('red-overlay');
+      if (health === 2) overlay.style.background = 'rgba(255, 0, 0, 0.25)';
+      else if (health === 1) overlay.style.background = 'rgba(255, 0, 0, 0.55)';
+      else if (health <= 0) overlay.style.background = 'rgba(255, 0, 0, 0.9)';
+
+      if (health <= 0) {
+        triggerDeath();
+      }
+    }
+
+    function triggerDeath() {
+      playSound('scary');
+      document.getElementById('crack-overlay').style.display = 'block';
+      const stage = document.getElementById('stage');
+      stage.classList.add('shatter');
+      
+      setTimeout(() => {
+        window.close();
+        document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:40vh; font-family:monospace;">ИГРА ОКОНЧЕНА</h1>';
+      }, 1200);
+    }
+
+    function handleChoice(option) {
+      clearOptions();
+
+      // ВОПРОС 1
+      if (currentStep === 1) {
+        if (!option.correct) {
+          punish();
+          setSubtitle("Ты меня расстроил..");
+          setTimeout(() => askQuestion2(), 2000);
+        } else {
+          playSound('good');
+          setSubtitle("Я долго думала об этом..и пришла к такому же выводу.");
+          setTimeout(() => askQuestion2(), 2500);
+        }
+      } 
+      // ВОПРОС 2
+      else if (currentStep === 2) {
+        if (option.action === 'yes') {
+          playSound('good');
+          document.getElementById('mouth-normal').style.display = 'none';
+          document.getElementById('mouth-smile').style.display = 'block';
+          setSubtitle("Я буду рада поиграть с тобой!");
+          setTimeout(() => askQuestion3(), 2500);
+        } else if (option.action === 'no') {
+          punish();
+          if (health > 0) {
+            setSubtitle("Я в любом случае заставлю тебя играть со мной..");
+            setTimeout(() => askQuestion3(), 2500);
+          }
+        } else if (option.action === 'how') {
+          playSound('scary');
+          const wrapper = document.getElementById('doll-wrapper');
+          wrapper.classList.remove('doll-far');
+          wrapper.classList.add('doll-close');
+          
+          setSubtitle("Смерть");
+          setTimeout(() => {
+            setSubtitle("Я очень не люблю любопытных людишек, тебе не должно быть интересно.");
+            setTimeout(() => {
+              wrapper.classList.remove('doll-close');
+              wrapper.classList.add('doll-far');
+              askQuestion3();
+            }, 2500);
+          }, 2000);
+        }
+      }
+      // ВОПРОС 3
+      else if (currentStep === 3) {
+        if (!option.correct) {
+          punish();
+          if (health > 0) {
+            setTimeout(() => askQuestion4(), 2000);
+          }
+        } else {
+          playSound('good');
+          setSubtitle("Я так старалась.. Рада, что вызвала у тебя нужные эмоции.");
+          setTimeout(() => askQuestion4(), 2500);
+        }
+      }
+    }
+
+    function askQuestion2() {
+      currentStep = 2;
+      setSubtitle("Ты бы хотел поиграть со мной?");
+      showOptions([
+        { text: "Да", action: 'yes' },
+        { text: "Нет конечно", action: 'no' },
+        { text: "Как поиграть..?", action: 'how' }
+      ]);
+    }
+
+    function askQuestion3() {
+      currentStep = 3;
+      document.getElementById('mouth-normal').style.display = 'block';
+      document.getElementById('mouth-smile').style.display = 'none';
+      setSubtitle("Скажи мне честно... Тебе ведь хоть немного страшно? Или твое сердце стучит так громко просто от чая с сахаром?");
+      showOptions([
+        { text: "Нисколько. Смешно бояться куклы на экране.", correct: false },
+        { text: "Ну, выглядит это все жутко, если честно.", correct: true }
+      ]);
+    }
+
+    function askQuestion4() {
+      currentStep = 4;
+      setSubtitle("Ну, раз ты все еще здесь, значит.. ты можешь дать мне имя? Пожалуйста..подбери мне что нибудь красивое.");
+      document.getElementById('name-input-container').style.display = 'flex';
+    }
+
+    function submitName() {
+      const input = document.getElementById('name-input').value.trim();
+      const cleanName = input.toLowerCase();
+
+      // Проверка на валидность имени
+      const isValid = VALID_FEMALE_NAMES.includes(cleanName) && cleanName.length >= 2;
+
+      document.getElementById('name-input-container').style.display = 'none';
+
+      if (!isValid) {
+        // Мгновенная гибель
+        health = 0;
+        document.getElementById('h1').classList.add('lost');
+        document.getElementById('h2').classList.add('lost');
+        document.getElementById('h3').classList.add('lost');
+        document.getElementById('red-overlay').style.background = 'rgba(255, 0, 0, 0.95)';
+        triggerDeath();
+      } else {
+        // Успешный выбор имени
+        playSound('good');
+        assignedName = input.charAt(0).toUpperCase() + input.slice(1);
+        
+        document.getElementById('speaker-name').style.display = 'block';
+        document.getElementById('speaker-name').innerText = assignedName;
+        
+        document.getElementById('mouth-normal').style.display = 'none';
+        document.getElementById('mouth-smile').style.display = 'block';
+
+        setSubtitle(`Какое красивое! У тебя..определенно есть вкус. Мне очень нравится имя "${assignedName}".`);
+      }
+    }
+  </script>
+</body>
+</html>
