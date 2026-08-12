@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Doll Game</title>
   <style>
+    /* Подключение пиксельного шрифта VPCH2 */
+    @font-face {
+      font-family: 'VPCH2';
+      src: url('VPCH2.otf') format('opentype'),
+           url('VPCH2.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -15,7 +24,7 @@
     body {
       background-color: #1a162b;
       color: #f4ede2;
-      font-family: 'Courier New', Courier, monospace;
+      font-family: 'VPCH2', 'Courier New', monospace;
       height: 100vh;
       overflow: hidden;
       display: flex;
@@ -24,7 +33,6 @@
       position: relative;
     }
 
-    /* ФОН И ЭФФЕКТЫ */
     #red-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -44,7 +52,7 @@
                   repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 10px);
     }
 
-    /* ИНТЕРФЕЙС СВЕРХУ (HEALTH) */
+    /* ВЕРХНЯЯ ПАНЕЛЬ ЗДОРОВЬЯ */
     #top-bar {
       position: absolute;
       top: 15px;
@@ -66,7 +74,7 @@
     }
 
     .heart-label {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       margin-right: 5px;
     }
 
@@ -87,7 +95,7 @@
     #warning-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(16, 12, 29, 0.92);
+      background: rgba(16, 12, 29, 0.95);
       backdrop-filter: blur(4px);
       display: flex;
       justify-content: center;
@@ -97,7 +105,7 @@
     }
 
     #warning-text {
-      font-size: 2rem;
+      font-size: 2.2rem;
       color: #f4ede2;
       font-weight: bold;
       letter-spacing: 3px;
@@ -105,7 +113,7 @@
       text-align: center;
     }
 
-    /* ИГРОВАЯ СЦЕНА (РАМКА) */
+    /* ИГРОВАЯ СЦЕНА */
     #stage {
       width: 100%;
       max-width: 680px;
@@ -117,10 +125,24 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 30px 20px 20px 20px;
+      padding: 20px;
       position: relative;
       z-index: 10;
       transition: filter 0.5s ease;
+      overflow: hidden;
+    }
+
+    /* CRT ЭФФЕКТ */
+    #stage::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      z-index: 30;
+      background-size: 100% 3px, 3px 100%;
+      pointer-events: none;
     }
 
     .blurred {
@@ -136,26 +158,21 @@
       100% { transform: translateY(100vh) rotate(15deg); opacity: 0; }
     }
 
-    /* РЕТРО КУКЛА (SVG ART) */
     #doll-wrapper {
       width: 100%;
-      height: 320px;
+      height: 340px;
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: transform 0.8s ease;
       position: relative;
     }
 
-    .doll-svg {
-      width: 280px;
-      height: 280px;
+    #doll-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
       image-rendering: pixelated;
     }
-
-    .doll-back { transform: scale(1.1); }
-    .doll-far { transform: scale(0.9); }
-    .doll-close { transform: scale(1.35) translateY(20px); }
 
     /* ДИАЛОГОВЫЙ БЛОК */
     #dialogue-container {
@@ -163,15 +180,16 @@
       background: #100c1d;
       border-top: 3px solid #f4ede2;
       padding: 15px;
-      min-height: 180px;
+      min-height: 190px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      z-index: 40;
     }
 
     #speaker-name {
       color: #e08b49;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       font-weight: bold;
       margin-bottom: 8px;
       letter-spacing: 1px;
@@ -180,12 +198,13 @@
 
     #subtitle {
       color: #f4ede2;
-      font-size: 1.1rem;
-      line-height: 1.4;
+      font-size: 1.25rem;
+      line-height: 1.3;
       margin-bottom: 15px;
+      min-height: 3em;
     }
 
-    /* ВАРИАНТЫ ОТВЕТОВ В СТИЛЕ PC-98 */
+    /* КНОПКИ ВАРИАНТОВ */
     #options-container {
       display: flex;
       flex-direction: column;
@@ -197,8 +216,8 @@
       color: #f4ede2;
       border: none;
       padding: 6px 10px;
-      font-family: inherit;
-      font-size: 1.05rem;
+      font-family: 'VPCH2', monospace;
+      font-size: 1.2rem;
       text-align: left;
       cursor: pointer;
       transition: all 0.1s;
@@ -218,7 +237,6 @@
       opacity: 1;
     }
 
-    /* ВВОД ИМЕНИ */
     #name-input-container {
       display: none;
       gap: 10px;
@@ -231,8 +249,8 @@
       border: 2px solid #f4ede2;
       color: #f4ede2;
       padding: 8px 12px;
-      font-family: inherit;
-      font-size: 1rem;
+      font-family: 'VPCH2', monospace;
+      font-size: 1.1rem;
       outline: none;
     }
 
@@ -242,7 +260,8 @@
       border: none;
       padding: 8px 16px;
       cursor: pointer;
-      font-family: inherit;
+      font-family: 'VPCH2', monospace;
+      font-size: 1.1rem;
       font-weight: bold;
     }
 
@@ -256,7 +275,6 @@
   <div id="red-overlay"></div>
   <div id="crack-overlay"></div>
 
-  <!-- Верхняя панель здоровья -->
   <div id="top-bar">
     <div id="hearts-container">
       <span class="heart-label">HEALTH:</span>
@@ -266,71 +284,19 @@
     </div>
   </div>
 
-  <!-- Оверлей предупреждения -->
   <div id="warning-overlay" onclick="dismissWarning()">
     <div id="warning-text">(НЕ РАССТРОЙ КУКОЛКУ)</div>
   </div>
 
-  <!-- Игровая сцена -->
   <div id="stage" class="blurred">
-    
-    <!-- Сцена с окном и силуэтом куклы (1-бит ретро) -->
-    <div id="doll-wrapper" class="doll-back">
-      <svg class="doll-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <!-- Дизеринг паттерн для полутеней -->
-          <pattern id="dither" width="2" height="2" patternUnits="userSpaceOnUse">
-            <rect width="1" height="1" fill="#f4ede2"/>
-            <rect x="1" y="1" width="1" height="1" fill="#f4ede2"/>
-          </pattern>
-        </defs>
-
-        <!-- Окно на фоне -->
-        <rect x="20" y="10" width="60" height="45" fill="none" stroke="#f4ede2" stroke-width="2"/>
-        <line x1="50" y1="10" x2="50" y2="55" stroke="#f4ede2" stroke-width="2"/>
-        <line x1="20" y1="30" x2="80" y2="30" stroke="#f4ede2" stroke-width="2"/>
-
-        <!-- Тень/Дизеринг на стене -->
-        <rect x="0" y="0" width="100" height="100" fill="url(#dither)" opacity="0.12"/>
-
-        <!-- Силуэт Куклы / Кресла -->
-        <!-- Плечи и тело -->
-        <path d="M 22 90 Q 25 55 50 55 Q 75 55 78 90 Z" fill="#100c1d" stroke="#f4ede2" stroke-width="2"/>
-        <!-- Руки сложенные -->
-        <path d="M 35 75 Q 50 85 65 75" fill="none" stroke="#f4ede2" stroke-width="2"/>
-        
-        <!-- Голова -->
-        <circle cx="50" cy="42" r="18" fill="#100c1d" stroke="#f4ede2" stroke-width="2"/>
-
-        <!-- Затылок / Волосы со спины -->
-        <g id="hair-back">
-          <path d="M 32 40 Q 50 22 68 40 Q 70 60 30 60 Z" fill="#f4ede2"/>
-        </g>
-
-        <!-- Лицо с жёлтыми светящимися глазами -->
-        <g id="face-front" style="display: none;">
-          <!-- Воротник/Детали -->
-          <path d="M 40 58 L 50 68 L 60 58" fill="none" stroke="#f4ede2" stroke-width="2"/>
-          
-          <!-- Глаза (Желтые, как на референсе) -->
-          <ellipse cx="42" cy="42" rx="4" ry="2.5" fill="#e08b49" stroke="#f4ede2" stroke-width="0.8"/>
-          <ellipse cx="58" cy="42" rx="4" ry="2.5" fill="#e08b49" stroke="#f4ede2" stroke-width="0.8"/>
-          <circle cx="42" cy="42" r="1" fill="#100c1d"/>
-          <circle cx="58" cy="42" r="1" fill="#100c1d"/>
-
-          <!-- Рот обычный -->
-          <line id="mouth-normal" x1="46" y1="50" x2="54" y2="50" stroke="#f4ede2" stroke-width="1.5"/>
-          <!-- Рот улыбка -->
-          <path id="mouth-smile" d="M 44 49 Q 50 55 56 49" stroke="#e08b49" stroke-width="2" fill="none" style="display: none;"/>
-        </g>
-      </svg>
+    <div id="doll-wrapper">
+      <img id="doll-img" src="doll_back.png" alt="Doll" />
     </div>
 
-    <!-- Диалоговое окно -->
     <div id="dialogue-container" onclick="handleStageClick()">
       <div>
         <div id="speaker-name">КУКЛА</div>
-        <div id="subtitle">привет. Ты вновь пришел со мной поиграть? Я так рада тебя видеть.</div>
+        <div id="subtitle"></div>
       </div>
 
       <div id="options-container" onclick="event.stopPropagation()"></div>
@@ -340,7 +306,6 @@
         <button id="submit-name-btn" onclick="submitName()">ПОДТВЕРДИТЬ</button>
       </div>
     </div>
-
   </div>
 
   <script>
@@ -357,12 +322,28 @@
     let health = 3;
     let currentStep = 0;
     let assignedName = "";
+    let typingTimer = null;
+    let isTyping = false;
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+    // Звук клика клавиатуры
+    function playKeyClickSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(600 + Math.random() * 200, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.03);
+    }
+
     function playSound(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain);
@@ -394,32 +375,50 @@
       }
     }
 
+    // Печать текста по одной букве
+    function setSubtitle(text, callback = null) {
+      if (typingTimer) clearInterval(typingTimer);
+      const el = document.getElementById('subtitle');
+      el.innerText = "";
+      let index = 0;
+      isTyping = true;
+
+      typingTimer = setInterval(() => {
+        if (index < text.length) {
+          const char = text.charAt(index);
+          el.innerText += char;
+          if (char !== " ") playKeyClickSound();
+          index++;
+        } else {
+          clearInterval(typingTimer);
+          isTyping = false;
+          if (callback) callback();
+        }
+      }, 40);
+    }
+
+    function setDollImage(filename) {
+      document.getElementById('doll-img').src = filename;
+    }
+
     function dismissWarning() {
       document.getElementById('warning-overlay').style.display = 'none';
       document.getElementById('stage').classList.remove('blurred');
-      
-      document.getElementById('hair-back').style.display = 'none';
-      document.getElementById('face-front').style.display = 'block';
-      
-      const wrapper = document.getElementById('doll-wrapper');
-      wrapper.classList.remove('doll-back');
-      wrapper.classList.add('doll-far');
-
+      setDollImage('doll_far.png');
       currentStep = 1;
-      setSubtitle("Мастер долго вытачивал мое лицо, но забыл подарить мне настоящее имя. Он просто оставил меня здесь. Как ты думаешь, почему он бросил меня одну в этой темноте?");
+      setSubtitle("привет. Ты вновь пришел со мной поиграть? Я так рада тебя видеть.");
     }
 
     function handleStageClick() {
+      if (isTyping) return;
       if (currentStep === 1) {
-        showOptions([
-          { text: "Наверное он променял тебя?", correct: false },
-          { text: "Он просто испугался, потому что ты получилась слишком идеальной и живой для этого мира", correct: true }
-        ]);
+        setSubtitle("Мастер долго вытачивал мое лицо, но забыл подарить мне настоящее имя. Он просто оставил меня здесь. Как ты думаешь, почему он бросил меня одну в этой темноте?", () => {
+          showOptions([
+            { text: "Наверное он променял тебя?", correct: false },
+            { text: "Он просто испугался, потому что ты получилась слишком идеальной и живой для этого мира", correct: true }
+          ]);
+        });
       }
-    }
-
-    function setSubtitle(text) {
-      document.getElementById('subtitle').innerText = text;
     }
 
     function clearOptions() {
@@ -441,19 +440,14 @@
     function punish() {
       health--;
       playSound('bad');
-      
       if (health === 2) document.getElementById('h3').classList.add('lost');
       else if (health === 1) document.getElementById('h2').classList.add('lost');
       else if (health <= 0) document.getElementById('h1').classList.add('lost');
-
       const overlay = document.getElementById('red-overlay');
       if (health === 2) overlay.style.background = 'rgba(220, 38, 38, 0.25)';
       else if (health === 1) overlay.style.background = 'rgba(220, 38, 38, 0.55)';
       else if (health <= 0) overlay.style.background = 'rgba(220, 38, 38, 0.9)';
-
-      if (health <= 0) {
-        triggerDeath();
-      }
+      if (health <= 0) triggerDeath();
     }
 
     function triggerDeath() {
@@ -461,106 +455,85 @@
       document.getElementById('crack-overlay').style.display = 'block';
       const stage = document.getElementById('stage');
       stage.classList.add('shatter');
-      
       setTimeout(() => {
         window.close();
-        document.body.innerHTML = '<h1 style="color:#f4ede2; text-align:center; margin-top:40vh; font-family:monospace; background:#100c1d; height:100vh;">FATAL ERROR: SYSTEM CRASH</h1>';
+        document.body.innerHTML = '<h1 style="color:#f4ede2; text-align:center; margin-top:40vh; font-family:VPCH2, monospace; background:#100c1d; height:100vh;">FATAL ERROR: SYSTEM CRASH</h1>';
       }, 1200);
     }
 
     function handleChoice(option) {
       clearOptions();
-
       if (currentStep === 1) {
         if (!option.correct) {
           punish();
-          setSubtitle("Ты меня расстроил..");
-          setTimeout(() => askQuestion2(), 2000);
+          setSubtitle("Ты меня расстроил..", () => setTimeout(() => askQuestion2(), 1500));
         } else {
           playSound('good');
-          setSubtitle("Я долго думала об этом..и пришла к такому же выводу.");
-          setTimeout(() => askQuestion2(), 2500);
+          setSubtitle("Я долго думала об этом..и пришла к такому же выводу.", () => setTimeout(() => askQuestion2(), 1800));
         }
       } 
       else if (currentStep === 2) {
         if (option.action === 'yes') {
           playSound('good');
-          document.getElementById('mouth-normal').style.display = 'none';
-          document.getElementById('mouth-smile').style.display = 'block';
-          setSubtitle("Я буду рада поиграть с тобой!");
-          setTimeout(() => askQuestion3(), 2500);
+          setSubtitle("Я буду рада поиграть с тобой!", () => setTimeout(() => askQuestion3(), 1800));
         } else if (option.action === 'no') {
           punish();
-          if (health > 0) {
-            setSubtitle("Я в любом случае заставлю тебя играть со мной..");
-            setTimeout(() => askQuestion3(), 2500);
-          }
+          if (health > 0) setSubtitle("Я в любом случае заставлю тебя играть со мной..", () => setTimeout(() => askQuestion3(), 1800));
         } else if (option.action === 'how') {
           playSound('scary');
-          const wrapper = document.getElementById('doll-wrapper');
-          wrapper.classList.remove('doll-far');
-          wrapper.classList.add('doll-close');
-          
-          setSubtitle("Смерть");
-          setTimeout(() => {
-            setSubtitle("Я очень не люблю любопытных людишек, тебе не должно быть интересно.");
+          setDollImage('doll_knife.png');
+          setSubtitle("Я очень не люблю любопытных людишек, тебе не должно быть интересно...", () => {
             setTimeout(() => {
-              wrapper.classList.remove('doll-close');
-              wrapper.classList.add('doll-far');
+              setDollImage('doll_far.png');
               askQuestion3();
             }, 2500);
-          }, 2000);
+          });
         }
       }
       else if (currentStep === 3) {
         if (!option.correct) {
           punish();
-          if (health > 0) {
-            setTimeout(() => askQuestion4(), 2000);
-          }
+          if (health > 0) setTimeout(() => askQuestion4(), 1500);
         } else {
           playSound('good');
-          setSubtitle("Я так старалась.. Рада, что вызвала у тебя нужные эмоции.");
-          setTimeout(() => askQuestion4(), 2500);
+          setSubtitle("Я так старалась.. Рада, что вызвала у тебя нужные эмоции.", () => setTimeout(() => askQuestion4(), 1800));
         }
       }
     }
 
     function askQuestion2() {
       currentStep = 2;
-      setSubtitle("Ты бы хотел поиграть со мной?");
-      showOptions([
-        { text: "Да", action: 'yes' },
-        { text: "Нет конечно", action: 'no' },
-        { text: "Как поиграть..?", action: 'how' }
-      ]);
+      setSubtitle("Ты бы хотел поиграть со мной?", () => {
+        showOptions([
+          { text: "Да", action: 'yes' },
+          { text: "Нет конечно", action: 'no' },
+          { text: "Как поиграть..?", action: 'how' }
+        ]);
+      });
     }
 
     function askQuestion3() {
       currentStep = 3;
-      document.getElementById('mouth-normal').style.display = 'block';
-      document.getElementById('mouth-smile').style.display = 'none';
-      setSubtitle("Скажи мне честно... Тебе ведь хоть немного страшно? Или твое сердце стучит так громко просто от чая с сахаром?");
-      showOptions([
-        { text: "Нисколько. Смешно бояться куклы на экране.", correct: false },
-        { text: "Ну, выглядит это все жутко, если честно.", correct: true }
-      ]);
+      setDollImage('doll_far.png');
+      setSubtitle("Скажи мне честно... Тебе ведь хоть немного страшно? Или твое сердце стучит так громко просто от чая с сахаром?", () => {
+        showOptions([
+          { text: "Нисколько. Смешно бояться куклы на экране.", correct: false },
+          { text: "Ну, выглядит это все жутко, если честно.", correct: true }
+        ]);
+      });
     }
 
     function askQuestion4() {
       currentStep = 4;
-      setSubtitle("Ну, раз ты все еще здесь, значит.. ты можешь дать мне имя? Пожалуйста..подбери мне что нибудь красивое.");
-      document.getElementById('name-input-container').style.display = 'flex';
+      setSubtitle("Ну, раз ты все еще здесь, значит.. ты можешь дать мне имя? Пожалуйста..подбери мне что нибудь красивое.", () => {
+        document.getElementById('name-input-container').style.display = 'flex';
+      });
     }
 
     function submitName() {
       const input = document.getElementById('name-input').value.trim();
-      const cleanName = input.toLowerCase();
-
-      const isValid = VALID_FEMALE_NAMES.includes(cleanName) && cleanName.length >= 2;
-
+      const isValid = VALID_FEMALE_NAMES.includes(input.toLowerCase()) && input.length >= 2;
       document.getElementById('name-input-container').style.display = 'none';
-
       if (!isValid) {
         health = 0;
         document.getElementById('h1').classList.add('lost');
@@ -571,13 +544,8 @@
       } else {
         playSound('good');
         assignedName = input.charAt(0).toUpperCase() + input.slice(1);
-        
         document.getElementById('speaker-name').style.display = 'block';
         document.getElementById('speaker-name').innerText = assignedName;
-        
-        document.getElementById('mouth-normal').style.display = 'none';
-        document.getElementById('mouth-smile').style.display = 'block';
-
         setSubtitle(`Какое красивое! У тебя..определенно есть вкус. Мне очень нравится имя "${assignedName}".`);
       }
     }
