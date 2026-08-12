@@ -13,8 +13,8 @@
     }
 
     body {
-      background-color: #050505;
-      color: #fff;
+      background-color: #1a162b;
+      color: #f4ede2;
       font-family: 'Courier New', Courier, monospace;
       height: 100vh;
       overflow: hidden;
@@ -24,11 +24,11 @@
       position: relative;
     }
 
-    /* ФОН И РАМКА ОШИБОК */
+    /* ФОН И ЭФФЕКТЫ */
     #red-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(255, 0, 0, 0);
+      background: rgba(220, 38, 38, 0);
       pointer-events: none;
       transition: background 0.5s ease;
       z-index: 5;
@@ -40,41 +40,55 @@
       pointer-events: none;
       display: none;
       z-index: 200;
-      background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 80%),
-                  repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 10px);
+      background: radial-gradient(circle, transparent 20%, #100c1d 80%),
+                  repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 2px, transparent 2px, transparent 10px);
     }
 
-    /* ЖИЗНИ (СЕРДЕЧКИ) */
-    #hearts-container {
+    /* ИНТЕРФЕЙС СВЕРХУ (HEALTH) */
+    #top-bar {
       position: absolute;
-      top: 20px;
+      top: 15px;
       left: 20px;
+      right: 20px;
       display: flex;
-      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
       z-index: 100;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #f4ede2;
+    }
+
+    #hearts-container {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .heart-label {
+      font-size: 1.1rem;
+      margin-right: 5px;
     }
 
     .heart {
-      width: 28px;
-      height: 28px;
-      background-color: #ff2244;
+      width: 22px;
+      height: 22px;
+      background-color: #f4ede2;
       clip-path: polygon(50% 15%, 80% 0%, 100% 20%, 100% 50%, 50% 95%, 0% 50%, 0% 20%, 20% 0%);
-      box-shadow: 0 0 10px #ff0033;
       transition: all 0.3s ease;
     }
 
     .heart.lost {
-      background-color: #333;
-      box-shadow: none;
-      transform: scale(0.8);
+      background-color: #3f3652;
+      transform: scale(0.75);
     }
 
     /* ОВЕРЛЕЙ ПРЕДУПРЕЖДЕНИЯ */
     #warning-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(8px);
+      background: rgba(16, 12, 29, 0.92);
+      backdrop-filter: blur(4px);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -83,30 +97,34 @@
     }
 
     #warning-text {
-      font-size: 2.2rem;
-      color: #ffffff;
+      font-size: 2rem;
+      color: #f4ede2;
       font-weight: bold;
-      text-shadow: 0 0 10px #ffffff, 0 0 20px #ff0000;
+      letter-spacing: 3px;
+      text-shadow: 2px 2px 0px #e08b49;
       text-align: center;
     }
 
-    /* СЦЕНА С КУКЛОЙ */
+    /* ИГРОВАЯ СЦЕНА (РАМКА) */
     #stage {
       width: 100%;
-      max-width: 800px;
-      height: 100vh;
+      max-width: 680px;
+      height: 90vh;
+      background-color: #100c1d;
+      border: 4px solid #f4ede2;
+      box-shadow: 0 0 0 8px #1a162b, 0 0 25px rgba(0,0,0,0.8);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 40px 20px;
+      padding: 30px 20px 20px 20px;
       position: relative;
       z-index: 10;
       transition: filter 0.5s ease;
     }
 
     .blurred {
-      filter: blur(6px);
+      filter: blur(5px);
     }
 
     .shatter {
@@ -118,78 +136,86 @@
       100% { transform: translateY(100vh) rotate(15deg); opacity: 0; }
     }
 
-    /* ПИКСЕЛЬНАЯ КУКЛА (SVG) */
+    /* РЕТРО КУКЛА (SVG ART) */
     #doll-wrapper {
-      width: 220px;
-      height: 260px;
-      margin-top: 40px;
-      transition: transform 1s ease;
+      width: 100%;
+      height: 320px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.8s ease;
       position: relative;
     }
 
     .doll-svg {
-      width: 100%;
-      height: 100%;
+      width: 280px;
+      height: 280px;
       image-rendering: pixelated;
     }
 
-    /* ПОЗИЦИИ КУКЛЫ */
-    .doll-back { transform: scale(1.4); }
+    .doll-back { transform: scale(1.1); }
     .doll-far { transform: scale(0.9); }
-    .doll-close { transform: scale(1.3) translateY(30px); }
+    .doll-close { transform: scale(1.35) translateY(20px); }
 
     /* ДИАЛОГОВЫЙ БЛОК */
     #dialogue-container {
       width: 100%;
-      background: rgba(10, 10, 10, 0.9);
-      border: 2px solid #333;
-      padding: 20px;
+      background: #100c1d;
+      border-top: 3px solid #f4ede2;
+      padding: 15px;
       min-height: 180px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 0 20px rgba(0,0,0,0.9);
     }
 
     #speaker-name {
-      color: #ff4466;
-      font-size: 0.9rem;
+      color: #e08b49;
+      font-size: 1.2rem;
+      font-weight: bold;
       margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       display: none;
     }
 
     #subtitle {
-      color: #00ff66;
+      color: #f4ede2;
       font-size: 1.1rem;
-      line-height: 1.5;
+      line-height: 1.4;
       margin-bottom: 15px;
     }
 
-    /* ВАРИАНТЫ ОТВЕТОВ */
+    /* ВАРИАНТЫ ОТВЕТОВ В СТИЛЕ PC-98 */
     #options-container {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .option-btn {
-      background: #151515;
-      color: #ddd;
-      border: 1px solid #444;
-      padding: 12px 15px;
+      background: transparent;
+      color: #f4ede2;
+      border: none;
+      padding: 6px 10px;
       font-family: inherit;
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       text-align: left;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.1s;
+    }
+
+    .option-btn::before {
+      content: "▶ ";
+      opacity: 0;
+      color: #e08b49;
     }
 
     .option-btn:hover {
-      background: #252525;
-      color: #fff;
-      border-color: #777;
+      color: #e08b49;
+    }
+
+    .option-btn:hover::before {
+      opacity: 1;
     }
 
     /* ВВОД ИМЕНИ */
@@ -201,24 +227,28 @@
 
     #name-input {
       flex: 1;
-      background: #000;
-      border: 1px solid #555;
-      color: #fff;
-      padding: 10px;
+      background: #1a162b;
+      border: 2px solid #f4ede2;
+      color: #f4ede2;
+      padding: 8px 12px;
       font-family: inherit;
       font-size: 1rem;
+      outline: none;
     }
 
     #submit-name-btn {
-      background: #333;
-      color: #fff;
-      border: 1px solid #666;
-      padding: 10px 20px;
+      background: #f4ede2;
+      color: #100c1d;
+      border: none;
+      padding: 8px 16px;
       cursor: pointer;
       font-family: inherit;
+      font-weight: bold;
     }
 
-    #submit-name-btn:hover { background: #555; }
+    #submit-name-btn:hover {
+      background: #e08b49;
+    }
   </style>
 </head>
 <body>
@@ -226,14 +256,17 @@
   <div id="red-overlay"></div>
   <div id="crack-overlay"></div>
 
-  <!-- Сердечки -->
-  <div id="hearts-container">
-    <div class="heart" id="h1"></div>
-    <div class="heart" id="h2"></div>
-    <div class="heart" id="h3"></div>
+  <!-- Верхняя панель здоровья -->
+  <div id="top-bar">
+    <div id="hearts-container">
+      <span class="heart-label">HEALTH:</span>
+      <div class="heart" id="h1"></div>
+      <div class="heart" id="h2"></div>
+      <div class="heart" id="h3"></div>
+    </div>
   </div>
 
-  <!-- Важное предупреждение поверх -->
+  <!-- Оверлей предупреждения -->
   <div id="warning-overlay" onclick="dismissWarning()">
     <div id="warning-text">(НЕ РАССТРОЙ КУКОЛКУ)</div>
   </div>
@@ -241,30 +274,55 @@
   <!-- Игровая сцена -->
   <div id="stage" class="blurred">
     
-    <!-- Кукла SVG -->
+    <!-- Сцена с окном и силуэтом куклы (1-бит ретро) -->
     <div id="doll-wrapper" class="doll-back">
-      <svg class="doll-svg" viewBox="0 0 32 32">
-        <!-- Тело и Платье -->
-        <path d="M10,18 L22,18 L25,30 L7,30 Z" fill="#2a2030"/>
+      <svg class="doll-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Дизеринг паттерн для полутеней -->
+          <pattern id="dither" width="2" height="2" patternUnits="userSpaceOnUse">
+            <rect width="1" height="1" fill="#f4ede2"/>
+            <rect x="1" y="1" width="1" height="1" fill="#f4ede2"/>
+          </pattern>
+        </defs>
+
+        <!-- Окно на фоне -->
+        <rect x="20" y="10" width="60" height="45" fill="none" stroke="#f4ede2" stroke-width="2"/>
+        <line x1="50" y1="10" x2="50" y2="55" stroke="#f4ede2" stroke-width="2"/>
+        <line x1="20" y1="30" x2="80" y2="30" stroke="#f4ede2" stroke-width="2"/>
+
+        <!-- Тень/Дизеринг на стене -->
+        <rect x="0" y="0" width="100" height="100" fill="url(#dither)" opacity="0.12"/>
+
+        <!-- Силуэт Куклы / Кресла -->
+        <!-- Плечи и тело -->
+        <path d="M 22 90 Q 25 55 50 55 Q 75 55 78 90 Z" fill="#100c1d" stroke="#f4ede2" stroke-width="2"/>
+        <!-- Руки сложенные -->
+        <path d="M 35 75 Q 50 85 65 75" fill="none" stroke="#f4ede2" stroke-width="2"/>
+        
         <!-- Голова -->
-        <rect x="10" y="6" width="12" height="12" fill="#d0c0b0"/>
-        <!-- Волосы (Спиной) -->
+        <circle cx="50" cy="42" r="18" fill="#100c1d" stroke="#f4ede2" stroke-width="2"/>
+
+        <!-- Затылок / Волосы со спины -->
         <g id="hair-back">
-          <rect x="8" y="4" width="16" height="16" fill="#111"/>
+          <path d="M 32 40 Q 50 22 68 40 Q 70 60 30 60 Z" fill="#f4ede2"/>
         </g>
-        <!-- Лицо (Лицом к нам, скрыто изначально) -->
+
+        <!-- Лицо с жёлтыми светящимися глазами -->
         <g id="face-front" style="display: none;">
-          <rect x="8" y="4" width="16" height="6" fill="#111"/> <!-- Чёлка -->
-          <rect x="12" y="11" width="2" height="3" fill="#111"/> <!-- Левый глаз -->
-          <rect x="18" y="11" width="2" height="3" fill="#111"/> <!-- Правый глаз -->
+          <!-- Воротник/Детали -->
+          <path d="M 40 58 L 50 68 L 60 58" fill="none" stroke="#f4ede2" stroke-width="2"/>
+          
+          <!-- Глаза (Желтые, как на референсе) -->
+          <ellipse cx="42" cy="42" rx="4" ry="2.5" fill="#e08b49" stroke="#f4ede2" stroke-width="0.8"/>
+          <ellipse cx="58" cy="42" rx="4" ry="2.5" fill="#e08b49" stroke="#f4ede2" stroke-width="0.8"/>
+          <circle cx="42" cy="42" r="1" fill="#100c1d"/>
+          <circle cx="58" cy="42" r="1" fill="#100c1d"/>
+
           <!-- Рот обычный -->
-          <rect id="mouth-normal" x="14" y="15" width="4" height="1" fill="#880000"/>
+          <line id="mouth-normal" x1="46" y1="50" x2="54" y2="50" stroke="#f4ede2" stroke-width="1.5"/>
           <!-- Рот улыбка -->
-          <path id="mouth-smile" d="M13,15 L14,16 L18,16 L19,15" stroke="#ff0044" stroke-width="1" fill="none" style="display: none;"/>
+          <path id="mouth-smile" d="M 44 49 Q 50 55 56 49" stroke="#e08b49" stroke-width="2" fill="none" style="display: none;"/>
         </g>
-        <!-- Руки -->
-        <rect x="7" y="18" width="3" height="8" fill="#d0c0b0"/>
-        <rect x="22" y="18" width="3" height="8" fill="#d0c0b0"/>
       </svg>
     </div>
 
@@ -286,7 +344,6 @@
   </div>
 
   <script>
-    // База женских имён для проверки
     const VALID_FEMALE_NAMES = [
       "анна", "аня", "алиса", "алина", "анастасия", "настя", "арина", "александра", "саша",
       "вероника", "виктория", "вика", "валерия", "варя", "варвара", "дарья", "даша", "диана",
@@ -294,14 +351,13 @@
       "злата", "ирина", "ира", "полина", "поля", "мария", "маша", "марина", "милана", "мирослава",
       "надежда", "надя", "наталья", "наташа", "ольга", "оля", "софия", "софья", "соня",
       "светлана", "света", "татьяна", "таня", "ульяна", "юлия", "юля", "яночка", "яна",
-      "лилия", "роза", "белла", "эмма", "оливия", "шарлотта", "клара", "элеонора", "мэри", "алиса"
+      "лилия", "роза", "белла", "эмма", "оливия", "шарлотта", "клара", "элеонора", "мэри"
     ];
 
     let health = 3;
     let currentStep = 0;
     let assignedName = "";
 
-    // Звуковой синтезатор (без сторонних файлов)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playSound(type) {
@@ -314,36 +370,34 @@
 
       if (type === 'bad') {
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.4);
+        osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.4);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.4);
       } else if (type === 'good') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
-      } else if (type === 'scary') {
         osc.type = 'square';
-        osc.frequency.setValueAtTime(80, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.6);
+        osc.stop(audioCtx.currentTime + 0.2);
+      } else if (type === 'scary') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
       }
     }
 
-    // Закрытие первого оверлея
     function dismissWarning() {
       document.getElementById('warning-overlay').style.display = 'none';
       document.getElementById('stage').classList.remove('blurred');
       
-      // Поворот куклы
       document.getElementById('hair-back').style.display = 'none';
       document.getElementById('face-front').style.display = 'block';
       
@@ -351,7 +405,6 @@
       wrapper.classList.remove('doll-back');
       wrapper.classList.add('doll-far');
 
-      // Начало первого вопроса
       currentStep = 1;
       setSubtitle("Мастер долго вытачивал мое лицо, но забыл подарить мне настоящее имя. Он просто оставил меня здесь. Как ты думаешь, почему он бросил меня одну в этой темноте?");
     }
@@ -389,16 +442,14 @@
       health--;
       playSound('bad');
       
-      // Обновление сердечек
       if (health === 2) document.getElementById('h3').classList.add('lost');
       else if (health === 1) document.getElementById('h2').classList.add('lost');
       else if (health <= 0) document.getElementById('h1').classList.add('lost');
 
-      // Покраснение экрана
       const overlay = document.getElementById('red-overlay');
-      if (health === 2) overlay.style.background = 'rgba(255, 0, 0, 0.25)';
-      else if (health === 1) overlay.style.background = 'rgba(255, 0, 0, 0.55)';
-      else if (health <= 0) overlay.style.background = 'rgba(255, 0, 0, 0.9)';
+      if (health === 2) overlay.style.background = 'rgba(220, 38, 38, 0.25)';
+      else if (health === 1) overlay.style.background = 'rgba(220, 38, 38, 0.55)';
+      else if (health <= 0) overlay.style.background = 'rgba(220, 38, 38, 0.9)';
 
       if (health <= 0) {
         triggerDeath();
@@ -413,14 +464,13 @@
       
       setTimeout(() => {
         window.close();
-        document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:40vh; font-family:monospace;">ИГРА ОКОНЧЕНА</h1>';
+        document.body.innerHTML = '<h1 style="color:#f4ede2; text-align:center; margin-top:40vh; font-family:monospace; background:#100c1d; height:100vh;">FATAL ERROR: SYSTEM CRASH</h1>';
       }, 1200);
     }
 
     function handleChoice(option) {
       clearOptions();
 
-      // ВОПРОС 1
       if (currentStep === 1) {
         if (!option.correct) {
           punish();
@@ -432,7 +482,6 @@
           setTimeout(() => askQuestion2(), 2500);
         }
       } 
-      // ВОПРОС 2
       else if (currentStep === 2) {
         if (option.action === 'yes') {
           playSound('good');
@@ -463,7 +512,6 @@
           }, 2000);
         }
       }
-      // ВОПРОС 3
       else if (currentStep === 3) {
         if (!option.correct) {
           punish();
@@ -509,21 +557,18 @@
       const input = document.getElementById('name-input').value.trim();
       const cleanName = input.toLowerCase();
 
-      // Проверка на валидность имени
       const isValid = VALID_FEMALE_NAMES.includes(cleanName) && cleanName.length >= 2;
 
       document.getElementById('name-input-container').style.display = 'none';
 
       if (!isValid) {
-        // Мгновенная гибель
         health = 0;
         document.getElementById('h1').classList.add('lost');
         document.getElementById('h2').classList.add('lost');
         document.getElementById('h3').classList.add('lost');
-        document.getElementById('red-overlay').style.background = 'rgba(255, 0, 0, 0.95)';
+        document.getElementById('red-overlay').style.background = 'rgba(220, 38, 38, 0.95)';
         triggerDeath();
       } else {
-        // Успешный выбор имени
         playSound('good');
         assignedName = input.charAt(0).toUpperCase() + input.slice(1);
         
