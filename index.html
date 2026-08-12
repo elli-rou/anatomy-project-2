@@ -111,6 +111,12 @@
       letter-spacing: 3px;
       text-shadow: 2px 2px 0px #e08b49;
       text-align: center;
+      animation: pulseText 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseText {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.04); opacity: 1; text-shadow: 2px 2px 8px #e08b49; }
     }
 
     /* ИГРОВАЯ СЦЕНА */
@@ -158,9 +164,10 @@
       100% { transform: translateY(100vh) rotate(15deg); opacity: 0; }
     }
 
+    /* АНИМАЦИИ КУКЛЫ */
     #doll-wrapper {
       width: 100%;
-      height: 340px;
+      height: 320px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -172,6 +179,37 @@
       max-height: 100%;
       object-fit: contain;
       image-rendering: pixelated;
+      animation: floatBreath 3.5s infinite ease-in-out, subtleJitter 6s infinite;
+      transition: filter 0.2s, transform 0.2s;
+    }
+
+    /* Плавно покачивается/дышит */
+    @keyframes floatBreath {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-8px) scale(1.02); }
+    }
+
+    /* Редкое микро-подёргивание */
+    @keyframes subtleJitter {
+      0%, 92%, 100% { transform: translate(0, 0); }
+      93% { transform: translate(-2px, 1px); }
+      95% { transform: translate(2px, -1px); }
+      97% { transform: translate(-1px, -2px); }
+    }
+
+    /* Анимация при ошибке игрока */
+    .doll-hurt {
+      animation: hurtShake 0.4s ease-in-out !important;
+      filter: drop-shadow(0 0 10px #dc2626) brightness(1.2);
+    }
+
+    @keyframes hurtShake {
+      0% { transform: scale(1) rotate(0deg); }
+      20% { transform: scale(0.9) rotate(-5deg); }
+      40% { transform: scale(1.1) rotate(5deg); }
+      60% { transform: scale(0.95) rotate(-3deg); }
+      80% { transform: scale(1.05) rotate(2deg); }
+      100% { transform: scale(1) rotate(0deg); }
     }
 
     /* ДИАЛОГОВЫЙ БЛОК */
@@ -180,7 +218,7 @@
       background: #100c1d;
       border-top: 3px solid #f4ede2;
       padding: 15px;
-      min-height: 190px;
+      min-height: 220px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -189,7 +227,7 @@
 
     #speaker-name {
       color: #e08b49;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: bold;
       margin-bottom: 8px;
       letter-spacing: 1px;
@@ -198,10 +236,14 @@
 
     #subtitle {
       color: #f4ede2;
-      font-size: 1.25rem;
-      line-height: 1.3;
+      font-size: 1.15rem;
+      line-height: 1.4;
       margin-bottom: 15px;
-      min-height: 3em;
+      min-height: 4.5em;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      white-space: pre-wrap;
     }
 
     /* КНОПКИ ВАРИАНТОВ */
@@ -216,25 +258,35 @@
       color: #f4ede2;
       border: none;
       padding: 6px 10px;
-      font-family: 'VPCH2', monospace;
-      font-size: 1.2rem;
+      font-family: 'VPCH2', 'Courier New', monospace;
+      font-size: 1.1rem;
       text-align: left;
       cursor: pointer;
-      transition: all 0.1s;
+      transition: all 0.15s ease;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      line-height: 1.3;
     }
 
     .option-btn::before {
       content: "▶ ";
       opacity: 0;
       color: #e08b49;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      display: inline-block;
+      transform: translateX(-5px);
     }
 
     .option-btn:hover {
       color: #e08b49;
+      transform: translateX(6px);
     }
 
     .option-btn:hover::before {
       opacity: 1;
+      transform: translateX(0);
     }
 
     #name-input-container {
@@ -249,7 +301,7 @@
       border: 2px solid #f4ede2;
       color: #f4ede2;
       padding: 8px 12px;
-      font-family: 'VPCH2', monospace;
+      font-family: 'VPCH2', 'Courier New', monospace;
       font-size: 1.1rem;
       outline: none;
     }
@@ -260,9 +312,10 @@
       border: none;
       padding: 8px 16px;
       cursor: pointer;
-      font-family: 'VPCH2', monospace;
+      font-family: 'VPCH2', 'Courier New', monospace;
       font-size: 1.1rem;
       font-weight: bold;
+      transition: background 0.2s;
     }
 
     #submit-name-btn:hover {
@@ -327,7 +380,6 @@
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // Звук клика клавиатуры
     function playKeyClickSound() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
@@ -375,19 +427,22 @@
       }
     }
 
-    // Печать текста по одной букве
     function setSubtitle(text, callback = null) {
       if (typingTimer) clearInterval(typingTimer);
       const el = document.getElementById('subtitle');
-      el.innerText = "";
+      el.innerHTML = "";
       let index = 0;
       isTyping = true;
 
       typingTimer = setInterval(() => {
         if (index < text.length) {
           const char = text.charAt(index);
-          el.innerText += char;
-          if (char !== " ") playKeyClickSound();
+          if (char === " ") {
+            el.innerHTML += "&nbsp;";
+          } else {
+            el.innerHTML += char;
+            playKeyClickSound();
+          }
           index++;
         } else {
           clearInterval(typingTimer);
@@ -399,6 +454,14 @@
 
     function setDollImage(filename) {
       document.getElementById('doll-img').src = filename;
+    }
+
+    function triggerDollHurtAnimation() {
+      const img = document.getElementById('doll-img');
+      img.classList.remove('doll-hurt');
+      void img.offsetWidth; // перезапуск анимации
+      img.classList.add('doll-hurt');
+      setTimeout(() => img.classList.remove('doll-hurt'), 400);
     }
 
     function dismissWarning() {
@@ -440,13 +503,17 @@
     function punish() {
       health--;
       playSound('bad');
+      triggerDollHurtAnimation();
+
       if (health === 2) document.getElementById('h3').classList.add('lost');
       else if (health === 1) document.getElementById('h2').classList.add('lost');
       else if (health <= 0) document.getElementById('h1').classList.add('lost');
+      
       const overlay = document.getElementById('red-overlay');
       if (health === 2) overlay.style.background = 'rgba(220, 38, 38, 0.25)';
       else if (health === 1) overlay.style.background = 'rgba(220, 38, 38, 0.55)';
       else if (health <= 0) overlay.style.background = 'rgba(220, 38, 38, 0.9)';
+      
       if (health <= 0) triggerDeath();
     }
 
@@ -482,6 +549,7 @@
         } else if (option.action === 'how') {
           playSound('scary');
           setDollImage('doll_knife.png');
+          triggerDollHurtAnimation();
           setSubtitle("Я очень не люблю любопытных людишек, тебе не должно быть интересно...", () => {
             setTimeout(() => {
               setDollImage('doll_far.jpg');
